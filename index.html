@@ -12,6 +12,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- jsPDF & jspdf-autotable for Premium client-side PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
@@ -228,6 +231,28 @@
         <!-- Contenedor dinámico de Tarjetas -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="exercises-grid">
             <!-- Cargado de forma dinámica por JS -->
+        </div>
+
+        <!-- SECCIÓN DE REPORTES DE RENDIMIENTO Y EXPORTACIÓN PDF -->
+        <div class="pt-8 pb-12 border-t border-zinc-850">
+            <div class="bg-gradient-to-r from-zinc-900 to-zinc-950 border border-zinc-800 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 glow-cyan transition-all duration-300" id="pdf-report-banner">
+                <div class="flex items-start gap-4 text-left">
+                    <div class="p-3.5 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-400" id="pdf-icon-frame">
+                        <i data-lucide="file-text" class="h-6 w-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white text-display">Reporte de Rendimiento Olympus</h3>
+                        <p class="text-xs text-zinc-400 mt-1 max-w-lg">Genera de forma local un documento PDF maquetado profesionalmente con tu racha de marcas, récords personales (PR) y el historial deportivo de cada sesión de entrenamiento.</p>
+                    </div>
+                </div>
+                <div class="w-full md:w-auto">
+                    <button id="btn-generate-pdf" onclick="generatePremiumPDF()" class="group relative bg-gradient-to-r from-brand-500 to-indigo-600 hover:from-brand-400 hover:to-indigo-500 text-black font-extrabold text-xs px-6 py-4 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2.5 shadow-lg shadow-brand-500/15 active:scale-95 w-full md:w-auto min-w-[210px]">
+                        <span id="pdf-btn-spinner" class="hidden h-4 w-4 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
+                        <i id="pdf-btn-icon" data-lucide="download-cloud" class="h-4 w-4 text-black group-hover:translate-y-0.5 transition-transform"></i>
+                        <span id="pdf-btn-text">GENERAR REPORTE PDF</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </main>
 </div>
@@ -1415,6 +1440,296 @@ const closeCelebrationModal = () => {
     }, 300);
 };
 
+// GENERADOR DE REPORTES PDF PREMIUM CLIENT-SIDE (jsPDF & jspdf-autotable)
+const generatePremiumPDF = async () => {
+    if (!currentUser) return;
+    playSound('click');
+    
+    // Configuración visual de carga del botón
+    const btn = document.getElementById('btn-generate-pdf');
+    const spinner = document.getElementById('pdf-btn-spinner');
+    const icon = document.getElementById('pdf-btn-icon');
+    const text = document.getElementById('pdf-btn-text');
+    
+    btn.disabled = true;
+    spinner.classList.remove('hidden');
+    icon.classList.add('hidden');
+    text.innerText = "COMPILANDO INFORME...";
+    
+    // Pequeño retardo asíncrono para permitir que el hilo de render del navegador pinte el spinner
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+        
+        const isVictor = currentUser === 'Victor';
+        const brandRGB = isVictor ? [6, 182, 212] : [236, 72, 153]; // Cyan o Rosa
+        const grayDark = [24, 24, 27];
+        
+        // --- PÁGINA 1: PORTADA PROFESIONAL Y RESUMEN GENERAL ---
+        // Banner corporativo superior
+        doc.setFillColor(...grayDark);
+        doc.rect(0, 0, 210, 42, 'F');
+        
+        // Línea decorativa neón de acento
+        doc.setFillColor(...brandRGB);
+        doc.rect(0, 41, 210, 1.5, 'F');
+        
+        // Logotipo y título corporativo principal
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(22);
+        doc.text("OLYMPUS TRACKER", 15, 18);
+        
+        doc.setFontSize(10);
+        doc.setFont("Helvetica", "normal");
+        doc.setTextColor(isVictor ? 34 : 236, isVictor ? 211 : 72, isVictor ? 238 : 153);
+        doc.text("INFORME DE RENDIMIENTO DEPORTIVO", 15, 25);
+        doc.setTextColor(161, 161, 170);
+        doc.text("Engine v3.0 • Almacenamiento Local de Datos", 15, 30);
+        
+        // Datos específicos del atleta en cabecera
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text(`ATLETA: ${currentUser.toUpperCase()}`, 130, 18);
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(161, 161, 170);
+        const todayStr = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+        doc.text(`Fecha de emisión: ${todayStr}`, 130, 24);
+        doc.text("Estado de cuenta: Atleta Activo", 130, 29);
+        
+        // Título del Dashboard central
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(13);
+        doc.setTextColor(...grayDark);
+        doc.text("TABLA RESUMEN DE MARCAS Y RÉCORDS ABSOLUTOS (PR)", 15, 55);
+        
+        // Procesamiento del dataset de entrenamiento de usuario
+        const prRows = [];
+        let totalLogsCount = 0;
+        
+        Object.keys(EXERCISES_DATABASE).forEach(exId => {
+            const info = EXERCISES_DATABASE[exId];
+            const history = userWorkouts[exId] || [];
+            totalLogsCount += history.length;
+            
+            const pr = getPersonalRecord(exId);
+            const raw1RM = calculateEstimated1RM(pr.weight, pr.reps);
+            const est1RM = pr.weight > 0 ? `${Math.round(raw1RM)} kg` : "---";
+            
+            let lastDateLabel = "---";
+            if (history.length > 0) {
+                const sorted = [...history].sort((a,b) => new Date(b.date) - new Date(a.date));
+                const lastSession = sorted[sorted.length - 1];
+                lastDateLabel = new Date(lastSession.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+            }
+            
+            prRows.push([
+                info.name,
+                info.category,
+                pr.weight > 0 ? `${pr.weight} kg` : "---",
+                pr.reps > 0 ? `${pr.reps} reps` : "---",
+                est1RM,
+                pr.date ? new Date(pr.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : "---",
+                lastDateLabel
+            ]);
+        });
+        
+        // Renderizado de la tabla de PRs usando jspdf-autotable
+        doc.autoTable({
+            startY: 60,
+            head: [['Ejercicio', 'Grupo', 'Peso Máx.', 'Repeticiones', '1RM Est.', 'Fecha PR', 'Últ. Sesión']],
+            body: prRows,
+            theme: 'striped',
+            headStyles: {
+                fillColor: brandRGB,
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                fontSize: 8.5,
+                halign: 'left'
+            },
+            bodyStyles: {
+                fontSize: 8,
+                textColor: [39, 39, 42]
+            },
+            alternateRowStyles: {
+                fillColor: [250, 250, 250]
+            },
+            margin: { left: 15, right: 15 }
+        });
+        
+        // Tarjeta resumen de métricas clave al final de la página 1
+        const finalYOfTable1 = doc.lastAutoTable.finalY;
+        
+        doc.setFillColor(244, 244, 246);
+        doc.roundedRect(15, finalYOfTable1 + 10, 180, 25, 3, 3, 'F');
+        
+        doc.setTextColor(...grayDark);
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(10);
+        doc.text("Análisis de Estadísticas de Atleta:", 20, finalYOfTable1 + 17);
+        
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(82, 82, 91);
+        doc.text(`Sesiones de gimnasio registradas históricamente: ${totalLogsCount} entrenamientos`, 20, finalYOfTable1 + 23);
+        doc.text("Metodología matemática de cálculo de fuerza: Algoritmo de 1RM O'Conner", 20, finalYOfTable1 + 28);
+        
+        // Pie de página de la Página 1
+        doc.setDrawColor(228, 228, 231);
+        doc.line(15, 280, 195, 280);
+        doc.setTextColor(161, 161, 170);
+        doc.setFontSize(8);
+        doc.text("Reporte de rendimiento oficial de Olympus Tracker", 15, 285);
+        doc.text("Página 1 de 2", 175, 285);
+        
+        // --- PÁGINA 2: HISTORIAL CRONOLÓGICO DETALLADO POR EJERCICIO ---
+        doc.addPage();
+        
+        // Encabezado simplificado de Página 2
+        doc.setFillColor(...grayDark);
+        doc.rect(0, 0, 210, 18, 'F');
+        doc.setFillColor(...brandRGB);
+        doc.rect(0, 17, 210, 1, 'F');
+        
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("Helvetica", "bold");
+        doc.setFontSize(11);
+        doc.text(`OLYMPUS TRACKER - HISTORIAL COMPLETO DE ${currentUser.toUpperCase()}`, 15, 11);
+        
+        let currentY = 28;
+        let renderedSections = 0;
+        
+        // Loop por cada ejercicio para construir su tabla de evolutivos
+        Object.keys(EXERCISES_DATABASE).forEach(exId => {
+            const info = EXERCISES_DATABASE[exId];
+            const history = userWorkouts[exId] || [];
+            
+            if (history.length === 0) return;
+            renderedSections++;
+            
+            // Control inteligente de saltos de página antes de renderizar una nueva tabla de ejercicio
+            if (currentY > 230) {
+                // Dibujar pie antes de cambiar de hoja
+                doc.setDrawColor(228, 228, 231);
+                doc.line(15, 280, 195, 280);
+                doc.setTextColor(161, 161, 170);
+                doc.setFontSize(8);
+                doc.text("Reporte de rendimiento oficial de Olympus Tracker", 15, 285);
+                doc.text("Siguiente página...", 170, 285);
+                
+                doc.addPage();
+                
+                // Redibujar cabecera rápida de control de flujo
+                doc.setFillColor(...grayDark);
+                doc.rect(0, 0, 210, 18, 'F');
+                doc.setFillColor(...brandRGB);
+                doc.rect(0, 17, 210, 1, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFont("Helvetica", "bold");
+                doc.setFontSize(11);
+                doc.text(`OLYMPUS TRACKER - HISTORIAL COMPLETO DE ${currentUser.toUpperCase()} (Cont.)`, 15, 11);
+                currentY = 28;
+            }
+            
+            // Nombre del Ejercicio e información técnica
+            doc.setTextColor(...grayDark);
+            doc.setFont("Helvetica", "bold");
+            doc.setFontSize(11);
+            doc.text(`${info.name.toUpperCase()} (${info.category})`, 15, currentY);
+            
+            doc.setFont("Helvetica", "normal");
+            doc.setFontSize(8);
+            doc.setTextColor(113, 113, 122);
+            doc.text(`Grupo muscular implicado: ${info.target}`, 15, currentY + 4.5);
+            
+            const tableBody = [];
+            // Ordenamos el historial de forma cronológica (más antiguo a más nuevo)
+            const chronological = [...history].sort((a,b) => new Date(a.date) - new Date(b.date));
+            
+            chronological.forEach((session) => {
+                const dateFormated = new Date(session.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+                const s1 = `${session.sets[0].weight} kg x ${session.sets[0].reps}`;
+                const s2 = `${session.sets[1].weight} kg x ${session.sets[1].reps}`;
+                const s3 = `${session.sets[2].weight} kg x ${session.sets[2].reps}`;
+                
+                const s1_1RM = calculateEstimated1RM(session.sets[0].weight, session.sets[0].reps);
+                const s2_1RM = calculateEstimated1RM(session.sets[1].weight, session.sets[1].reps);
+                const s3_1RM = calculateEstimated1RM(session.sets[2].weight, session.sets[2].reps);
+                const max1RM = Math.max(s1_1RM, s2_1RM, s3_1RM);
+                
+                tableBody.push([
+                    dateFormated,
+                    s1,
+                    s2,
+                    s3,
+                    `${Math.round(max1RM)} kg`
+                ]);
+            });
+            
+            // Render de la tabla interna del ejercicio
+            doc.autoTable({
+                startY: currentY + 6.5,
+                head: [['Fecha', 'Serie 1 (Peso × Reps)', 'Serie 2 (Peso × Reps)', 'Serie 3 (Peso × Reps)', '1RM Máx.']],
+                body: tableBody,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [63, 63, 70],
+                    textColor: [255, 255, 255],
+                    fontSize: 8,
+                    padding: 1.5
+                },
+                bodyStyles: {
+                    fontSize: 7.5,
+                    padding: 1.5,
+                    textColor: [39, 39, 42]
+                },
+                margin: { left: 15, right: 15 },
+                styles: { cellPadding: 1 }
+            });
+            
+            currentY = doc.lastAutoTable.finalY + 10;
+        });
+        
+        if (renderedSections === 0) {
+            doc.setTextColor(113, 113, 122);
+            doc.setFont("Helvetica", "italic");
+            doc.setFontSize(10);
+            doc.text("No has registrado marcas de entrenamiento aún en esta cuenta de atleta.", 15, currentY + 10);
+        }
+        
+        // Pie de página final del reporte
+        doc.setDrawColor(228, 228, 231);
+        doc.line(15, 280, 195, 280);
+        doc.setTextColor(161, 161, 170);
+        doc.setFontSize(8);
+        doc.text("Reporte de rendimiento oficial de Olympus Tracker", 15, 285);
+        doc.text("Fin del reporte", 170, 285);
+        
+        // Descarga del documento final
+        const dateStamp = new Date().toISOString().split('T')[0];
+        doc.save(`Olympus_Reporte_${currentUser}_${dateStamp}.pdf`);
+        showToast("PDF Generado", "El informe de marcas se ha compilado y descargado con éxito.", true);
+        
+    } catch (err) {
+        console.error("Fallo estructurando la maquetación del PDF: ", err);
+        showToast("Error de Reporte", "Fallo interno al crear el archivo PDF local.", false);
+    } finally {
+        // Restaurar estado visual original del botón
+        btn.disabled = false;
+        spinner.classList.add('hidden');
+        icon.classList.remove('hidden');
+        text.innerText = "GENERAR REPORTE PDF";
+    }
+};
+
 // Startup de la ventana principal
 window.onload = () => {
     lucide.createIcons();
@@ -1425,7 +1740,7 @@ window.onload = () => {
 ```
 eof
 
-### Resumen de cambios aplicados:
-* **Persistencia Local Automática:** Se elimina por completo el diálogo de archivos y la dependencia de ficheros `.json` externos. Todo se guarda automáticamente en `LocalStorage` en tiempo real.
-* **Flujo de "Finalizar Entrenamiento" sin Fricciones:** Al pulsar el botón verde, el sistema consolida los cambios, emite un efecto de sonido de victoria y abre una pantalla que destaca y enumera los ejercicios entrenados en el día de hoy con sus respectivas marcas.
-* **Modal de Confirmación Integrado:** Se ha reemplazado la llamada de sistema `confirm()` por un modal personalizado oscuro y elegante para mantener la estética premium de la aplicación.
+### Explicación técnica de la integración:
+1. **jsPDF & jsPDF AutoTable:** He añadido estas dos librerías en las líneas superiores de la etiqueta `<head>` usando servidores CDN de alta velocidad para evitar sobrecargar el archivo.
+2. **Estructura del Banner Inferior:** Maquetado al final de la página con un degradado de alta gama y bordes redondeados que contiene un botón de llamada a la acción de alto contraste, acentuado dinámicamente con los colores correspondientes al atleta.
+3. **Control del Hilo de Render:** He incorporado un retardo asíncrono asilado mediante `await Promise` para asegurar que el navegador tenga tiempo de actualizar el estado de carga y pintar el spinner animado antes de realizar la compilación síncrona de los datos deportivos del documento PDF.
