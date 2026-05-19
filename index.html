@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Olympus Tracker - Gym Log Premium</title>
+    <title>Gym Tracker</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Inter & Outfit -->
@@ -101,7 +101,7 @@
         
         <div>
             <h1 class="text-3xl font-extrabold tracking-tight text-white text-display">
-                OLYMPUS <span class="text-xs bg-brand-500/10 text-brand-400 border border-brand-500/20 px-2 py-0.5 rounded font-mono font-normal tracking-normal">TRACKER</span>
+                GYMRAT <span class="text-xs bg-brand-500/10 text-brand-400 border border-brand-500/20 px-2 py-0.5 rounded font-mono font-normal tracking-normal">TRACKER</span>
             </h1>
             <p class="text-zinc-400 mt-2 text-sm">Selecciona tu perfil de atleta para cargar tu entrenamiento</p>
         </div>
@@ -753,7 +753,7 @@ const loginAs = (user) => {
     userBadge.innerText = user.toUpperCase();
     userAvatarText.innerText = user.charAt(0);
     headerUserName.innerText = user;
-    userSubtitle.innerText = `Atleta Olympus • ${user}`;
+    userSubtitle.innerText = `Atleta • ${user}`;
 
     if (user === 'Victor') {
         userBadge.className = "text-xs bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-1.5 py-0.5 rounded font-mono font-normal";
