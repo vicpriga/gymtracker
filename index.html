@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Olympus Tracker - Gym Log Premium</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#ecfeff',
+                            100: '#cffafe',
+                            400: '#22d3ee',
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                            900: '#164e63',
+                            950: '#083344',
+                        },
+                        accent: '#f43f5e'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #09090b;
+            color: #f4f4f5;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .text-display {
+            font-family: 'Outfit', sans-serif;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #18181b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3f3f46;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #22d3ee;
+        }
+        /* Glowing neon effects */
+        .glow-cyan {
+            box-shadow: 0 0 15px -3px rgba(34, 211, 238, 0.25);
+        }
+        .glow-accent {
+            box-shadow: 0 0 15px -3px rgba(244, 63, 94, 0.25);
+        }
+        .glow-green {
+            box-shadow: 0 0 20px -2px rgba(16, 185, 129, 0.3);
+        }
+        .glow-victor {
+            box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.4);
+        }
+        .glow-blanca {
+            box-shadow: 0 0 25px -5px rgba(236, 72, 153, 0.4);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-12 overflow-x-hidden selection:bg-brand-500 selection:text-black">
+
+<!-- PANTALLA DE LOGIN INICIAL (MODERNA, SIN CONTRASEÑA) -->
+<div id="login-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 bg-zinc-950 transition-all duration-500">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.08),transparent_60%)]"></div>
+    
+    <div class="w-full max-w-md text-center z-10 space-y-8 animate-fade-in">
+        <!-- Logo -->
+        <div class="inline-flex h-16 w-16 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-600 items-center justify-center glow-cyan mb-2">
+            <i data-lucide="dumbbell" class="h-8 w-8 text-white"></i>
+        </div>
+        
+        <div>
+            <h1 class="text-3xl font-extrabold tracking-tight text-white text-display">
+                OLYMPUS <span class="text-xs bg-brand-500/10 text-brand-400 border border-brand-500/20 px-2 py-0.5 rounded font-mono font-normal tracking-normal">TRACKER</span>
+            </h1>
+            <p class="text-zinc-400 mt-2 text-sm">Selecciona tu perfil de atleta para cargar tu entrenamiento</p>
+        </div>
+
+        <!-- Tarjetas de usuario -->
+        <div class="grid grid-cols-2 gap-4 pt-4">
+            <!-- Botón Víctor -->
+            <button onclick="loginAs('Victor')" class="group relative bg-zinc-900 border border-zinc-800 hover:border-brand-500/50 rounded-3xl p-6 transition-all duration-300 transform hover:-translate-y-1 hover:bg-zinc-900/80 hover:glow-victor text-center">
+                <div class="h-16 w-16 mx-auto rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="user" class="h-8 w-8 text-brand-400"></i>
+                </div>
+                <h3 class="font-bold text-lg text-white text-display">Víctor</h3>
+                <span class="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">Atleta</span>
+                <div class="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i data-lucide="arrow-right" class="h-4 w-4 text-brand-400"></i>
+                </div>
+            </button>
+
+            <!-- Botón Blanca -->
+            <button onclick="loginAs('Blanca')" class="group relative bg-zinc-900 border border-zinc-800 hover:border-pink-500/50 rounded-3xl p-6 transition-all duration-300 transform hover:-translate-y-1 hover:bg-zinc-900/80 hover:glow-blanca text-center">
+                <div class="h-16 w-16 mx-auto rounded-2xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                    <i data-lucide="user-round" class="h-8 w-8 text-pink-400"></i>
+                </div>
+                <h3 class="font-bold text-lg text-white text-display">Blanca</h3>
+                <span class="text-[10px] text-zinc-500 uppercase tracking-widest font-mono">Atleta</span>
+                <div class="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i data-lucide="arrow-right" class="h-4 w-4 text-pink-400"></i>
+                </div>
+            </button>
+        </div>
+
+        <p class="text-[11px] text-zinc-600 font-mono">Olympus Engine v3.0 • Almacenamiento Interno Persistente</p>
+    </div>
+</div>
+
+<!-- INTERFAZ PRINCIPAL DE LA APLICACIÓN -->
+<div id="main-app" class="hidden opacity-0 transition-opacity duration-500">
+    <!-- Header Navigation Bar -->
+    <header class="sticky top-0 z-40 w-full border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center glow-cyan">
+                    <i data-lucide="dumbbell" class="h-5 w-5 text-white animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight text-white text-display flex items-center gap-1.5">
+                        OLYMPUS <span id="user-badge" class="text-xs bg-brand-500/10 text-brand-400 border border-brand-500/20 px-1.5 py-0.5 rounded font-mono font-normal">TRACKER</span>
+                    </h1>
+                    <p class="text-[10px] text-zinc-500 uppercase tracking-widest -mt-0.5" id="user-subtitle">Sesión Iniciada</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <!-- Backup manual discreto (Opcional, de utilidad) -->
+                <button onclick="exportData()" class="p-2 text-zinc-500 hover:text-brand-400 hover:bg-zinc-900 rounded-lg transition-colors duration-200" title="Guardar copia manual en JSON">
+                    <i data-lucide="download" class="h-4 w-4"></i>
+                </button>
+                <button onclick="triggerImport()" class="p-2 text-zinc-500 hover:text-amber-400 hover:bg-zinc-900 rounded-lg transition-colors duration-200" title="Cargar copia manual de JSON">
+                    <i data-lucide="upload" class="h-4 w-4"></i>
+                </button>
+                <input type="file" id="file-import-input" class="hidden" accept=".json" onchange="importData(event)">
+
+                <!-- Reiniciar base de datos de usuario actual -->
+                <button onclick="handleResetData()" class="p-2 text-zinc-500 hover:text-rose-400 hover:bg-zinc-900 rounded-lg transition-colors duration-200" title="Restablecer mis datos">
+                    <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+                </button>
+
+                <div class="h-6 w-px bg-zinc-850 mx-1"></div>
+
+                <!-- Botón de Cerrar Sesión / Cambiar Usuario -->
+                <button onclick="logout()" class="flex items-center gap-2 py-1.5 px-3 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 rounded-xl text-xs font-bold border border-zinc-800 hover:border-zinc-700 transition-all">
+                    <i data-lucide="log-out" class="h-3.5 w-3.5 text-zinc-400"></i>
+                    <span class="hidden sm:inline">Cerrar Sesión</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 mt-6 space-y-6">
+        
+        <!-- RESUMEN DE PROGRESO DE USUARIO E INFORMACIÓN CLAVE -->
+        <div class="bg-gradient-to-r from-zinc-900 to-zinc-950 border border-zinc-800 rounded-3xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+            <div class="flex items-center gap-4">
+                <div class="h-14 w-14 rounded-2xl bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center glow-cyan flex-shrink-0" id="header-user-avatar">
+                    <span class="text-xl font-bold text-white text-display" id="user-avatar-text">U</span>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-white text-display flex items-center gap-2">
+                        ¡Hola, <span id="header-user-name" class="text-brand-400">Atleta</span>!
+                    </h2>
+                    <p class="text-xs text-zinc-400 mt-1 flex items-center gap-1.5">
+                        <i data-lucide="calendar" class="h-3.5 w-3.5 text-zinc-500"></i> Último entrenamiento: 
+                        <span id="header-last-date" class="font-mono text-zinc-200 font-bold">Sin registrar</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Botón Grande de FINALIZAR ENTRENAMIENTO -->
+            <button onclick="finishWorkoutSession()" class="group bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-zinc-950 font-extrabold text-sm px-6 py-4 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 glow-green active:scale-95">
+                <i data-lucide="check-circle" class="h-5 w-5 text-zinc-950 group-hover:scale-110 transition-transform"></i>
+                <span>FINALIZAR ENTRENAMIENTO</span>
+            </button>
+        </div>
+
+        <!-- Filtros interactivos por grupo muscular -->
+        <div class="flex items-center justify-between flex-wrap gap-4 border-b border-zinc-800 pb-4">
+            <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth py-1">
+                <button onclick="filterExercises('Todos')" id="btn-filter-Todos" class="btn-filter px-4 py-2 rounded-xl text-xs font-semibold bg-brand-500 text-black border border-brand-400/20 shadow-md shadow-brand-500/10 transition-all duration-200">
+                    Todos
+                </button>
+                <button onclick="filterExercises('Empuje')" id="btn-filter-Empuje" class="btn-filter px-4 py-2 rounded-xl text-xs font-semibold bg-zinc-900 text-zinc-400 border border-zinc-800 hover:bg-zinc-800 hover:text-white transition-all duration-200">
+                    Empuje (Push)
+                </button>
+                <button onclick="filterExercises('Tracción')" id="btn-filter-Tracción" class="btn-filter px-4 py-2 rounded-xl text-xs font-semibold bg-zinc-900 text-zinc-400 border border-zinc-800 hover:bg-zinc-800 hover:text-white transition-all duration-200">
+                    Tracción (Pull)
+                </button>
+                <button onclick="filterExercises('Piernas')" id="btn-filter-Piernas" class="btn-filter px-4 py-2 rounded-xl text-xs font-semibold bg-zinc-900 text-zinc-400 border border-zinc-800 hover:bg-zinc-800 hover:text-white transition-all duration-200">
+                    Piernas (Legs)
+                </button>
+            </div>
+            <p class="text-xs text-zinc-500 flex items-center gap-1">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                Autoguardado en LocalStorage activo
+            </p>
+        </div>
+
+        <!-- Contenedor dinámico de Tarjetas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="exercises-grid">
+            <!-- Cargado de forma dinámica por JS -->
+        </div>
+    </main>
+</div>
+
+<!-- MODAL PARA REGISTRAR / EDITAR ENTRENAMIENTO -->
+<div id="modal-log-workout" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl w-full max-w-lg overflow-hidden transform scale-95 transition-transform duration-300 shadow-2xl">
+        <div class="relative bg-gradient-to-r from-zinc-900 to-zinc-950 p-6 border-b border-zinc-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-xl bg-brand-500/10 border border-brand-500/30 flex items-center justify-center">
+                    <i data-lucide="edit-3" class="h-5 w-5 text-brand-400"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-white text-display" id="modal-title-exercise-name">Registrar Entrenamiento</h3>
+                    <p class="text-xs text-brand-400 font-medium" id="modal-title-exercise-desc">Selecciona peso y repeticiones</p>
+                </div>
+            </div>
+            <button onclick="closeLogModal()" class="text-zinc-400 hover:text-white hover:bg-zinc-800 p-2 rounded-xl transition-colors duration-200">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+        </div>
+
+        <form onsubmit="saveWorkout(event)" class="p-6 space-y-5">
+            <input type="hidden" id="input-exercise-id">
+            <input type="hidden" id="input-workout-index-to-edit" value="-1">
+            
+            <!-- Fecha -->
+            <div>
+                <label class="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2" for="workout-date">Fecha de la sesión</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-500">
+                        <i data-lucide="calendar" class="h-4 w-4"></i>
+                    </span>
+                    <input type="date" id="workout-date" required class="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-brand-500 transition-colors">
+                </div>
+            </div>
+
+            <!-- Entrada de Series -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Historial de Series</span>
+                    <span class="text-[10px] text-zinc-500">Introduce peso y repeticiones</span>
+                </div>
+                
+                <!-- Serie 1 -->
+                <div class="bg-zinc-950 p-4 border border-zinc-850 rounded-2xl flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-2">
+                        <span class="h-7 w-7 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20 flex items-center justify-center text-xs font-mono font-bold">1</span>
+                        <span class="text-xs font-medium text-zinc-300 font-display">Serie 1</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-24">
+                            <label class="sr-only">Peso S1</label>
+                            <div class="relative">
+                                <input type="number" step="0.5" placeholder="0" id="set-1-weight" required class="w-full text-center font-mono font-bold text-white bg-zinc-900 border border-zinc-800 rounded-lg py-1.5 focus:outline-none focus:border-brand-500">
+                                <span class="absolute right-2 bottom-2 text-[9px] text-zinc-500 font-bold uppercase font-mono">kg</span>
+                            </div>
+                        </div>
+                        <span class="text-zinc-600 font-bold">×</span>
+                        <div class="w-20">
+                            <label class="sr-only">Reps S1</label>
+                            <div class="relative">
+                                <input type="number" placeholder="0" id="set-1-reps" required class="w-full text-center font-mono font-bold text-white bg-zinc-900 border border-zinc-800 rounded-lg py-1.5 focus:outline-none focus:border-brand-500">
+                                <span class="absolute right-2 bottom-2 text-[9px] text-zinc-500 font-bold uppercase font-mono">rep</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Serie 2 -->
+                <div class="bg-zinc-950 p-4 border border-zinc-850 rounded-2xl flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-2">
+                        <span class="h-7 w-7 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20 flex items-center justify-center text-xs font-mono font-bold">2</span>
+                        <span class="text-xs font-medium text-zinc-300 font-display">Serie 2</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-24">
+                            <label class="sr-only">Peso S2</label>
+                            <div class="relative">
+                                <input type="number" step="0.5" placeholder="0" id="set-2-weight" required class="w-full text-center font-mono font-bold text-white bg-zinc-900 border border-zinc-800 rounded-lg py-1.5 focus:outline-none focus:border-brand-500">
+                                <span class="absolute right-2 bottom-2 text-[9px] text-zinc-500 font-bold uppercase font-mono">kg</span>
+                            </div>
+                        </div>
+                        <span class="text-zinc-600 font-bold">×</span>
+                        <div class="w-20">
+                            <label class="sr-only">Reps S2</label>
+                            <div class="relative">
+                                <input type="number" placeholder="0" id="set-2-reps" required class="w-full text-center font-mono font-bold text-white bg-zinc-900 border border-zinc-800 rounded-lg py-1.5 focus:outline-none focus:border-brand-500">
+                                <span class="absolute right-2 bottom-2 text-[9px] text-zinc-500 font-bold uppercase font-mono">rep</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Serie 3 -->
+                <div class="bg-zinc-950 p-4 border border-zinc-850 rounded-2xl flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-2">
+                        <span class="h-7 w-7 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20 flex items-center justify-center text-xs font-mono font-bold">3</span>
+                        <span class="text-xs font-medium text-zinc-300 font-display">Serie 3</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-24">
+                            <label class="sr-only">Peso S3</label>
+                            <div class="relative">
+                                <input type="number" step="0.5" placeholder="0" id="set-3-weight" required class="w-full text-center font-mono font-bold text-white bg-zinc-900 border border-zinc-800 rounded-lg py-1.5 focus:outline-none focus:border-brand-500">
+                                <span class="absolute right-2 bottom-2 text-[9px] text-zinc-500 font-bold uppercase font-mono">kg</span>
+                            </div>
+                        </div>
+                        <span class="text-zinc-600 font-bold">×</span>
+                        <div class="w-20">
+                            <label class="sr-only">Reps S3</label>
+                            <div class="relative">
+                                <input type="number" placeholder="0" id="set-3-reps" required class="w-full text-center font-mono font-bold text-white bg-zinc-900 border border-zinc-800 rounded-lg py-1.5 focus:outline-none focus:border-brand-500">
+                                <span class="absolute right-2 bottom-2 text-[9px] text-zinc-500 font-bold uppercase font-mono">rep</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex items-center gap-3 pt-2">
+                <button type="button" onclick="closeLogModal()" class="flex-1 bg-zinc-950 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 rounded-xl py-3 text-xs font-bold transition-colors">
+                    Cancelar
+                </button>
+                <button type="submit" class="flex-1 bg-brand-500 hover:bg-brand-400 text-black rounded-xl py-3 text-xs font-bold transition-all shadow-lg shadow-brand-500/20 flex items-center justify-center gap-2">
+                    <i data-lucide="check" class="h-4 w-4"></i> Guardar Serie
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- DETALLES E HISTORIAL DEL EJERCICIO -->
+<div id="modal-analytics-history" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300 shadow-2xl">
+        <div class="relative bg-gradient-to-r from-zinc-900 to-zinc-950 p-6 border-b border-zinc-800 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-xl bg-violet-500/10 border border-violet-500/30 flex items-center justify-center">
+                    <i data-lucide="trending-up" class="h-5 w-5 text-violet-400"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-white text-display" id="history-modal-exercise-name">Análisis de Progreso</h3>
+                    <p class="text-xs text-violet-400 font-medium" id="history-modal-exercise-target">Grupo muscular implicado</p>
+                </div>
+            </div>
+            <button onclick="closeHistoryModal()" class="text-zinc-400 hover:text-white hover:bg-zinc-800 p-2 rounded-xl transition-colors duration-200">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+        </div>
+
+        <div class="overflow-y-auto p-6 space-y-6 flex-1">
+            <!-- Analytics quick metrics cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-zinc-950 border border-zinc-800/80 rounded-2xl p-4 flex items-center justify-between font-display">
+                    <div>
+                        <p class="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Récord Absoluto (PR)</p>
+                        <h4 class="text-2xl font-bold text-amber-400 mt-1" id="metric-pr-weight">0 kg</h4>
+                    </div>
+                    <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+                        <i data-lucide="award" class="h-5 w-5"></i>
+                    </div>
+                </div>
+                <div class="bg-zinc-950 border border-zinc-800/80 rounded-2xl p-4 flex items-center justify-between font-display">
+                    <div>
+                        <p class="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">1RM Estimado Máx.</p>
+                        <h4 class="text-2xl font-bold text-violet-400 mt-1" id="metric-1rm">0 kg</h4>
+                    </div>
+                    <div class="p-3 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400">
+                        <i data-lucide="zap" class="h-5 w-5"></i>
+                    </div>
+                </div>
+                <div class="bg-zinc-950 border border-zinc-800/80 rounded-2xl p-4 flex items-center justify-between font-display">
+                    <div>
+                        <p class="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Volumen Histórico</p>
+                        <h4 class="text-2xl font-bold text-brand-400 mt-1" id="metric-total-vol">0 kg</h4>
+                    </div>
+                    <div class="p-3 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-400">
+                        <i data-lucide="archive" class="h-5 w-5"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráfico del Historial de Fuerza -->
+            <div class="bg-zinc-950 border border-zinc-850 p-4 rounded-3xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h4 class="text-sm font-bold text-white font-display">Evolución de Fuerza e Intensidad</h4>
+                    <span class="text-[10px] bg-zinc-900 text-zinc-500 px-2 py-1 rounded font-mono">Métrica 1RM O'Conner</span>
+                </div>
+                <div class="relative h-64 w-full">
+                    <canvas id="progress-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Listado del Historial Completo -->
+            <div>
+                <h4 class="text-sm font-bold text-white mb-3 flex items-center justify-between font-display">
+                    <span>Historial de Registros</span>
+                    <span class="text-xs text-zinc-500 font-normal font-mono" id="history-total-logs-count">0 entradas</span>
+                </h4>
+                <div class="border border-zinc-850 bg-zinc-950 rounded-2xl overflow-hidden divide-y divide-zinc-900" id="history-logs-container">
+                    <!-- Cargado dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE CELEBRACIÓN DE ENTRENAMIENTO COMPLETADO -->
+<div id="modal-celebration" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-300 shadow-2xl p-6 text-center space-y-6">
+        <div class="relative">
+            <div class="h-20 w-20 mx-auto rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center text-zinc-950 glow-green animate-bounce">
+                <i data-lucide="party-popper" class="h-10 w-10"></i>
+            </div>
+            <!-- Luces neón flotantes simuladas -->
+            <div class="absolute -top-2 -left-2 h-3 w-3 bg-brand-400 rounded-full animate-ping"></div>
+            <div class="absolute bottom-2 -right-2 h-2.5 w-2.5 bg-violet-400 rounded-full animate-ping"></div>
+        </div>
+        
+        <div class="space-y-2">
+            <h3 class="text-2xl font-black text-white text-display tracking-tight">¡ENTRENAMIENTO GUARDADO!</h3>
+            <p class="text-xs text-zinc-400">Tu esfuerzo se ha guardado de forma permanente en la base de datos interna de tu navegador.</p>
+        </div>
+
+        <div class="bg-zinc-950 border border-zinc-850 p-4 rounded-2xl text-left space-y-3">
+            <h4 class="text-xs font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5 font-display">
+                <i data-lucide="dumbbell" class="h-3.5 w-3.5 text-brand-400"></i> Ejercicios completados hoy
+            </h4>
+            <div class="grid grid-cols-1 gap-2" id="celebration-summary-list">
+                <!-- Se rellena con JS -->
+            </div>
+        </div>
+
+        <button onclick="closeCelebrationModal()" class="w-full bg-gradient-to-r from-cyan-500 to-brand-500 hover:from-cyan-400 hover:to-brand-400 text-black font-extrabold rounded-2xl py-3.5 text-sm transition-all shadow-lg shadow-brand-500/10">
+            ¡De acuerdo, a por el próximo!
+        </button>
+    </div>
+</div>
+
+<!-- DIÁLOGO DE CONFIRMACIÓN DE ACCIONES (REEMPLAZA AL CONFIRM DEL NAVEGADOR) -->
+<div id="modal-confirm" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/95 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-zinc-900 border border-zinc-800 rounded-3xl w-full max-w-sm overflow-hidden transform scale-95 transition-transform duration-300 shadow-2xl p-6 text-center space-y-4">
+        <div class="h-12 w-12 mx-auto rounded-full bg-rose-500/10 flex items-center justify-center text-rose-400">
+            <i data-lucide="help-circle" class="h-6 w-6"></i>
+        </div>
+        <div>
+            <h3 class="text-lg font-bold text-white text-display" id="confirm-title">¿Estás seguro?</h3>
+            <p class="text-xs text-zinc-400 mt-2" id="confirm-message">Esta acción no se puede deshacer.</p>
+        </div>
+        <div class="flex gap-3">
+            <button id="btn-confirm-cancel" class="flex-1 bg-zinc-950 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 rounded-xl py-2.5 text-xs font-bold transition-colors">
+                Cancelar
+            </button>
+            <button id="btn-confirm-action" class="flex-1 bg-rose-500 hover:bg-rose-400 text-white rounded-xl py-2.5 text-xs font-bold transition-all">
+                Confirmar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- AREA DE TOAST NOTIFICATION -->
+<div id="toast-message" class="fixed bottom-6 right-6 z-50 transform translate-y-12 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="bg-zinc-900 border border-brand-500/40 text-white rounded-2xl px-5 py-3.5 shadow-xl flex items-center gap-3 max-w-sm glow-cyan">
+        <div class="h-8 w-8 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-400 flex-shrink-0" id="toast-icon-bg">
+            <i data-lucide="check" class="h-4 w-4" id="toast-icon"></i>
+        </div>
+        <div>
+            <p class="text-xs font-bold" id="toast-title">Aviso de Éxito</p>
+            <p class="text-[11px] text-zinc-400 mt-0.5" id="toast-body">Detalle de la acción realizada</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// Exercises definitions with muscular target descriptors and customized SVGs 
+const EXERCISES_DATABASE = {
+    maquina_pectoral: {
+        id: "maquina_pectoral",
+        name: "Máquina de pectoral",
+        category: "Empuje",
+        target: "Pectoral Mayor, Deltoides Anterior",
+        svg: `<svg viewBox="0 0 100 100" class="w-full h-full text-zinc-600"><circle cx="50" cy="50" r="45" fill="#18181b"/><path d="M50,20 C50,20 40,25 35,35 C30,45 32,55 35,65 C38,75 50,80 50,80 C50,80 62,75 65,65 C68,55 70,45 65,35 C60,25 50,20 50,20 Z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="50" cy="30" r="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M37,38 C37,38 42,44 50,44 C58,44 63,38 63,38" fill="none" stroke="#22d3ee" stroke-width="4" stroke-linecap="round"/><path d="M25,50 L35,50 M65,50 L75,50" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`
+    },
+    jalon: {
+        id: "jalon",
+        name: "Jalón",
+        category: "Tracción",
+        target: "Dorsal Ancho, Redondo Mayor, Bíceps",
+        svg: `<svg viewBox="0 0 100 100" class="w-full h-full text-zinc-600"><circle cx="50" cy="50" r="45" fill="#18181b"/><path d="M25,20 L75,20 M50,20 L50,45" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M38,40 C35,48 35,55 40,65 C45,75 50,80 50,80 C50,80 55,75 60,65 C65,55 65,48 62,40" fill="none" stroke="#22d3ee" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="35" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M30,30 L40,38 M70,30 L60,38" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`
+    },
+    sentadilla_multipower: {
+        id: "sentadilla_multipower",
+        name: "Sentadilla en multipower",
+        category: "Piernas",
+        target: "Cuádriceps, Glúteo Mayor, Core",
+        svg: `<svg viewBox="0 0 100 100" class="w-full h-full text-zinc-600"><circle cx="50" cy="50" r="45" fill="#18181b"/><path d="M25,15 L25,85 M75,15 L75,85" stroke="currentColor" stroke-width="2" stroke-dasharray="3,3"/><rect x="20" y="32" width="60" height="6" rx="3" fill="currentColor"/><path d="M50,38 L50,45 C50,45 42,48 40,55 L35,75" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M50,45 C50,45 58,48 60,55 L65,75" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M35,75 C35,75 42,73 50,73 C58,73 65,75 65,75" stroke="#22d3ee" stroke-width="4" stroke-linecap="round" fill="none"/></svg>`
+    },
+    leg_extension: {
+        id: "leg_extension",
+        name: "Leg extension",
+        category: "Piernas",
+        target: "Cuádriceps Femoral",
+        svg: `<svg viewBox="0 0 100 100" class="w-full h-full text-zinc-600"><circle cx="50" cy="50" r="45" fill="#18181b"/><path d="M40,35 L55,45 L50,60 L70,68" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M50,60 L70,68" stroke="#22d3ee" stroke-width="4" stroke-linecap="round"/><circle cx="50" cy="60" r="4" fill="#22d3ee"/><circle cx="40" cy="35" r="5" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+    },
+    leg_curl: {
+        id: "leg_curl",
+        name: "Leg curl",
+        category: "Piernas",
+        target: "Isquiotibiales, Gastrocnemio",
+        svg: `<svg viewBox="0 0 100 100" class="w-full h-full text-zinc-600"><circle cx="50" cy="50" r="45" fill="#18181b"/><path d="M35,35 L45,45 L62,40 L68,22" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/><path d="M62,40 L68,22" stroke="#22d3ee" stroke-width="4" stroke-linecap="round"/><circle cx="62" cy="40" r="4" fill="#22d3ee"/><circle cx="35" cy="35" r="5" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+    },
+    hip_thrust: {
+        id: "hip_thrust",
+        name: "Hip thrust",
+        category: "Piernas",
+        target: "Glúteo Mayor, Isquiotibiales",
+        svg: `<svg viewBox="0 0 100 100" class="w-full h-full text-zinc-600"><circle cx="50" cy="50" r="45" fill="#18181b"/><path d="M25,55 L40,55 L55,45 L75,55" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" fill="none"/><path d="M40,55 L55,45" stroke="#22d3ee" stroke-width="4" stroke-linecap="round"/><rect x="42" y="38" width="10" height="20" rx="2" transform="rotate(45 47 48)" fill="currentColor"/></svg>`
+    },
+    remo_apoyado: {
+        id: "remo_apoyado",
+        name: "Remo apoyado",
+        category: "Tracción",
+        target: "Dorsal Ancho, Deltoides Posterior, Trapecios",
+        svg: `<svg viewBox="0 0 100 100" class="w-full h-full text-zinc-600"><circle cx="50" cy="50" r="45" fill="#18181b"/><path d="M30,65 L70,35" stroke="currentColor" stroke-width="3" stroke-dasharray="2,2"/><path d="M42,32 C40,40 40,48 46,55 C52,62 60,65 60,65" fill="none" stroke="#22d3ee" stroke-width="4" stroke-linecap="round"/><circle cx="38" cy="28" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M46,45 L38,55" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>`
+    },
+    press_militar: {
+        id: "press_militar",
+        name: "Press militar en máquina",
+        category: "Empuje",
+        target: "Deltoides Medios y Anteriores, Tríceps",
+        svg: `<svg viewBox="0 0 100 100" class="w-full h-full text-zinc-600"><circle cx="50" cy="50" r="45" fill="#18181b"/><path d="M35,65 L35,55 C35,45 45,45 50,45 C55,45 65,45 65,55 L65,65" stroke="currentColor" stroke-width="2.5" fill="none"/><path d="M28,32 L40,40 M72,32 L60,40" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="50" cy="35" r="5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M35,55 C35,48 42,42 50,42 C58,42 65,48 65,55" stroke="#22d3ee" stroke-width="4" stroke-linecap="round" fill="none"/></svg>`
+    },
+    dominadas: {
+        id: "dominadas",
+        name: "Dominadas",
+        category: "Tracción",
+        target: "Dorsal Mayor, Bíceps Braquial, Core",
+        svg: `<svg viewBox="0 0 100 100" class="w-full h-full text-zinc-600"><circle cx="50" cy="50" r="45" fill="#18181b"/><path d="M20,25 L80,25 M20,20 L20,30 M80,20 L80,30" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M38,25 L41,40 C41,40 45,55 50,55 C55,55 59,40 59,40 L62,25" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/><path d="M41,40 C41,40 45,55 50,55 C55,55 59,40 59,40" stroke="#22d3ee" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="50" cy="32" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>`
+    }
+};
+
+// Global App State
+let currentUser = null; // 'Victor' o 'Blanca'
+let userWorkouts = {};
+let currentActiveFilter = "Todos";
+let chartInstance = null;
+
+// Audio feedback generator using Web Audio API
+const playSound = (type) => {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'success') {
+            osc.frequency.setValueAtTime(440, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.1, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.3);
+        } else if (type === 'fanfare') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+            osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
+            osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2); // G5
+            osc.frequency.setValueAtTime(1046.50, ctx.currentTime + 0.3); // C6
+            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.6);
+        } else if (type === 'delete') {
+            osc.frequency.setValueAtTime(300, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.25);
+            gain.gain.setValueAtTime(0.12, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.25);
+        } else if (type === 'click') {
+            osc.frequency.setValueAtTime(600, ctx.currentTime);
+            gain.gain.setValueAtTime(0.04, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.05);
+        }
+    } catch (e) {
+        console.warn('Audio feedback deferred.', e);
+    }
+};
+
+// 1RM O'Conner calculation Formula
+const calculateEstimated1RM = (weight, reps) => {
+    if (reps <= 1) return weight;
+    return weight * (1 + 0.025 * reps);
+};
+
+// Get Absolute Personal Record (PR) ever recorded for an exercise
+const getPersonalRecord = (exerciseId) => {
+    const history = userWorkouts[exerciseId] || [];
+    if (history.length === 0) return { weight: 0, reps: 0, date: "" };
+    
+    let maxWeight = 0;
+    let matchingRep = 0;
+    let prDate = "";
+    
+    history.forEach(session => {
+        session.sets.forEach(set => {
+            if (parseFloat(set.weight) > maxWeight) {
+                maxWeight = parseFloat(set.weight);
+                matchingRep = parseInt(set.reps);
+                prDate = session.date;
+            } else if (parseFloat(set.weight) === maxWeight && parseInt(set.reps) > matchingRep) {
+                matchingRep = parseInt(set.reps);
+                prDate = session.date;
+            }
+        });
+    });
+    
+    return { weight: maxWeight, reps: matchingRep, date: prDate };
+};
+
+// Custom confirmation modal (Replaces standard window.confirm)
+let confirmCallback = null;
+const showConfirm = (title, message, onConfirm) => {
+    document.getElementById('confirm-title').innerText = title;
+    document.getElementById('confirm-message').innerText = message;
+    confirmCallback = onConfirm;
+    
+    const modal = document.getElementById('modal-confirm');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.querySelector('.transform').classList.remove('scale-95');
+    }, 10);
+};
+
+const closeConfirm = () => {
+    const modal = document.getElementById('modal-confirm');
+    modal.classList.add('opacity-0');
+    modal.querySelector('.transform').classList.add('scale-95');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+};
+
+// Event listeners for confirm modal
+document.getElementById('btn-confirm-cancel').onclick = closeConfirm;
+document.getElementById('btn-confirm-action').onclick = () => {
+    if (confirmCallback) confirmCallback();
+    closeConfirm();
+};
+
+// Toast notification trigger
+const showToast = (title, message, isSuccess = true) => {
+    const toast = document.getElementById('toast-message');
+    const tTitle = document.getElementById('toast-title');
+    const tBody = document.getElementById('toast-body');
+    const tIconBg = document.getElementById('toast-icon-bg');
+    const tIcon = document.getElementById('toast-icon');
+
+    tTitle.innerText = title;
+    tBody.innerText = message;
+    
+    if (isSuccess) {
+        tIconBg.className = "h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 flex-shrink-0";
+        tIcon.setAttribute('data-lucide', 'check');
+    } else {
+        tIconBg.className = "h-8 w-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400 flex-shrink-0";
+        tIcon.setAttribute('data-lucide', 'alert-circle');
+    }
+    
+    lucide.createIcons();
+
+    toast.classList.remove('translate-y-12', 'opacity-0');
+    toast.classList.add('translate-y-0', 'opacity-100');
+
+    setTimeout(() => {
+        toast.classList.add('translate-y-12', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+    }, 4000);
+};
+
+// AUTENTICACIÓN / LOGIN SIN CONTRASEÑA
+const loginAs = (user) => {
+    playSound('click');
+    currentUser = user;
+    
+    // Configurar estética según el usuario
+    const userBadge = document.getElementById('user-badge');
+    const headerUserAvatar = document.getElementById('header-user-avatar');
+    const userAvatarText = document.getElementById('user-avatar-text');
+    const headerUserName = document.getElementById('header-user-name');
+    const userSubtitle = document.getElementById('user-subtitle');
+
+    userBadge.innerText = user.toUpperCase();
+    userAvatarText.innerText = user.charAt(0);
+    headerUserName.innerText = user;
+    userSubtitle.innerText = `Atleta Olympus • ${user}`;
+
+    if (user === 'Victor') {
+        userBadge.className = "text-xs bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-1.5 py-0.5 rounded font-mono font-normal";
+        headerUserAvatar.className = "h-14 w-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center glow-cyan flex-shrink-0";
+    } else {
+        userBadge.className = "text-xs bg-pink-500/10 text-pink-400 border border-pink-500/20 px-1.5 py-0.5 rounded font-mono font-normal";
+        headerUserAvatar.className = "h-14 w-14 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center glow-accent flex-shrink-0";
+    }
+
+    // Cargar base de datos del LocalStorage correspondiente al usuario
+    loadUserData();
+
+    // Transición visual suave para mostrar la aplicación
+    const loginScreen = document.getElementById('login-screen');
+    const mainApp = document.getElementById('main-app');
+
+    loginScreen.classList.add('opacity-0');
+    setTimeout(() => {
+        loginScreen.classList.add('hidden');
+        mainApp.classList.remove('hidden');
+        setTimeout(() => {
+            mainApp.classList.remove('opacity-0');
+            renderExercisesGrid();
+            updateHeaderMetrics();
+        }, 50);
+    }, 500);
+};
+
+const logout = () => {
+    playSound('click');
+    currentUser = null;
+    userWorkouts = {};
+
+    const loginScreen = document.getElementById('login-screen');
+    const mainApp = document.getElementById('main-app');
+
+    mainApp.classList.add('opacity-0');
+    setTimeout(() => {
+        mainApp.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
+        setTimeout(() => {
+            loginScreen.classList.remove('opacity-0');
+        }, 50);
+    }, 500);
+};
+
+// Carga y Persistencia Local de Usuario
+const loadUserData = () => {
+    const storageKey = `olympus_gym_${currentUser.toLowerCase()}`;
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+        try {
+            userWorkouts = JSON.parse(stored);
+        } catch (e) {
+            console.error("Error leyendo datos de LocalStorage, inicializando vacío", e);
+            userWorkouts = {};
+        }
+    } else {
+        userWorkouts = {};
+        localStorage.setItem(storageKey, JSON.stringify(userWorkouts));
+    }
+};
+
+const persistUserData = () => {
+    if (!currentUser) return;
+    const storageKey = `olympus_gym_${currentUser.toLowerCase()}`;
+    localStorage.setItem(storageKey, JSON.stringify(userWorkouts));
+};
+
+// Actualizar última fecha de entrenamiento en la tarjeta resumen
+const updateHeaderMetrics = () => {
+    const headerLastDate = document.getElementById('header-last-date');
+    let absoluteNewestDate = null;
+
+    Object.keys(userWorkouts).forEach(exId => {
+        const history = userWorkouts[exId] || [];
+        history.forEach(session => {
+            const d = new Date(session.date);
+            if (!absoluteNewestDate || d > absoluteNewestDate) {
+                absoluteNewestDate = d;
+            }
+        });
+    });
+
+    if (absoluteNewestDate) {
+        headerLastDate.innerText = absoluteNewestDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+    } else {
+        headerLastDate.innerText = "Sin registrar";
+    }
+};
+
+const handleResetData = () => {
+    showConfirm(
+        "¿Restablecer datos?",
+        `¿Seguro que quieres borrar todos tus progresos de ${currentUser}? Esta acción no se puede deshacer.`,
+        () => {
+            userWorkouts = {};
+            persistUserData();
+            renderExercisesGrid();
+            updateHeaderMetrics();
+            showToast("Restablecido", `Tus datos de ${currentUser} se han puesto a cero.`);
+        }
+    );
+};
+
+// COPIA DE SEGURIDAD (Opcional - Utilidad extra para exportar/importar)
+const exportData = () => {
+    if (!currentUser) return;
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userWorkouts, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `olympus_${currentUser.toLowerCase()}_backup.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    showToast("Copia Creada", `Backup oly_backup_${currentUser.toLowerCase()}.json exportado.`);
+};
+
+const triggerImport = () => {
+    playSound('click');
+    document.getElementById('file-import-input').click();
+};
+
+const importData = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const importedData = JSON.parse(e.target.result);
+            if (typeof importedData === 'object' && !Array.isArray(importedData)) {
+                userWorkouts = importedData;
+                persistUserData();
+                renderExercisesGrid();
+                updateHeaderMetrics();
+                showToast("Datos Sincronizados", "Copia de seguridad cargada y guardada en LocalStorage.");
+            } else {
+                showToast("Fallo al Importar", "Formato de archivo incorrecto.", false);
+            }
+        } catch (err) {
+            showToast("Error de Lectura", "No se pudo descifrar el JSON de copia.", false);
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = "";
+};
+
+// INTERACCIÓN Y RENDERIZADO DE LAS TARJETAS DE EJERCICIO
+const renderExercisesGrid = () => {
+    const grid = document.getElementById('exercises-grid');
+    grid.innerHTML = "";
+
+    Object.keys(EXERCISES_DATABASE).forEach(exId => {
+        const info = EXERCISES_DATABASE[exId];
+        
+        // Filtros por grupo muscular
+        if (currentActiveFilter !== "Todos" && info.category !== currentActiveFilter) {
+            return;
+        }
+
+        const history = userWorkouts[exId] || [];
+        const sortedHistory = [...history].sort((a,b) => new Date(b.date) - new Date(a.date));
+        const lastSession = sortedHistory[0];
+        const prevSession = sortedHistory[1];
+
+        const pr = getPersonalRecord(exId);
+
+        // Comparar sesión actual con la anterior (Progreso)
+        let deltaHtml = "";
+        if (lastSession && prevSession) {
+            const lastMaxWeight = Math.max(...lastSession.sets.map(s => parseFloat(s.weight)));
+            const prevMaxWeight = Math.max(...prevSession.sets.map(s => parseFloat(s.weight)));
+            const diff = lastMaxWeight - prevMaxWeight;
+            
+            if (diff > 0) {
+                deltaHtml = `<span class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded font-bold font-mono">▲ +${diff} kg</span>`;
+            } else if (diff < 0) {
+                deltaHtml = `<span class="text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/20 px-1.5 py-0.5 rounded font-bold font-mono">▼ ${diff} kg</span>`;
+            } else {
+                deltaHtml = `<span class="text-[10px] bg-zinc-800 text-zinc-400 border border-zinc-700 px-1.5 py-0.5 rounded font-bold font-mono">= kg</span>`;
+            }
+        }
+
+        // Formatear última fecha registrada
+        let dateLabel = "Sin registrar";
+        if (lastSession) {
+            const rawDate = new Date(lastSession.date);
+            dateLabel = rawDate.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        const card = document.createElement('div');
+        card.className = "bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800 rounded-3xl overflow-hidden hover:border-brand-500/40 transition-all duration-300 flex flex-col justify-between group";
+        
+        // Generar las tarjetas de las 3 series
+        let setsRowsHtml = `<p class="text-xs text-zinc-500 italic py-2 text-center">Sin entrenamientos en este ejercicio</p>`;
+        if (lastSession && lastSession.sets && lastSession.sets.length >= 3) {
+            setsRowsHtml = `
+                <div class="grid grid-cols-3 gap-2 mt-2">
+                    <div class="bg-zinc-950 border border-zinc-850 p-2 rounded-xl text-center">
+                        <span class="text-[9px] uppercase font-bold text-zinc-500 block mb-0.5 font-display">Serie 1</span>
+                        <span class="font-mono text-xs font-bold text-white">${lastSession.sets[0].weight} <span class="text-[9px] text-zinc-400">kg</span></span>
+                        <span class="text-zinc-500 font-bold mx-0.5">×</span>
+                        <span class="font-mono text-xs font-bold text-brand-400">${lastSession.sets[0].reps}</span>
+                    </div>
+                    <div class="bg-zinc-950 border border-zinc-850 p-2 rounded-xl text-center">
+                        <span class="text-[9px] uppercase font-bold text-zinc-500 block mb-0.5 font-display">Serie 2</span>
+                        <span class="font-mono text-xs font-bold text-white">${lastSession.sets[1].weight} <span class="text-[9px] text-zinc-400">kg</span></span>
+                        <span class="text-zinc-500 font-bold mx-0.5">×</span>
+                        <span class="font-mono text-xs font-bold text-brand-400">${lastSession.sets[1].reps}</span>
+                    </div>
+                    <div class="bg-zinc-950 border border-zinc-850 p-2 rounded-xl text-center">
+                        <span class="text-[9px] uppercase font-bold text-zinc-500 block mb-0.5 font-display">Serie 3</span>
+                        <span class="font-mono text-xs font-bold text-white">${lastSession.sets[2].weight} <span class="text-[9px] text-zinc-400">kg</span></span>
+                        <span class="text-zinc-500 font-bold mx-0.5">×</span>
+                        <span class="font-mono text-xs font-bold text-brand-400">${lastSession.sets[2].reps}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        card.innerHTML = `
+            <div class="p-5 flex-1 flex flex-col">
+                <!-- Información de Cabecera del Ejercicio -->
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1 pr-2">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-400 border border-brand-500/20">${info.category}</span>
+                            ${deltaHtml}
+                        </div>
+                        <h4 class="text-base font-bold text-white text-display leading-tight">${info.name}</h4>
+                        <p class="text-[10px] text-zinc-500 mt-0.5">${info.target}</p>
+                    </div>
+                    
+                    <!-- SVG Ilustrativo del Ejercicio -->
+                    <div class="h-14 w-14 rounded-2xl overflow-hidden flex-shrink-0 border border-zinc-800 bg-zinc-950 group-hover:border-brand-500/30 transition-colors">
+                        ${info.svg}
+                    </div>
+                </div>
+
+                <!-- Resumen de PR e Historial Rápido -->
+                <div class="mt-auto pt-3 border-t border-zinc-800/80">
+                    <div class="flex items-center justify-between text-[11px] mb-2">
+                        <span class="text-zinc-400 font-semibold flex items-center gap-1">
+                            <i data-lucide="clock" class="h-3.5 w-3.5 text-zinc-500"></i> Última sesión:
+                        </span>
+                        <span class="text-zinc-300 font-mono">${dateLabel}</span>
+                    </div>
+
+                    <!-- Insignia de Record Personal -->
+                    ${pr.weight > 0 ? `
+                    <div class="flex items-center justify-between text-[11px] mb-3 bg-amber-500/5 border border-amber-500/10 p-2 rounded-xl animate-pulse">
+                        <span class="text-amber-400 font-bold flex items-center gap-1">
+                            <i data-lucide="award" class="h-3.5 w-3.5"></i> Récord Máx. (PR):
+                        </span>
+                        <span class="text-amber-300 font-mono font-bold">${pr.weight} kg <span class="text-[9px] text-zinc-500">x ${pr.reps}</span></span>
+                    </div>
+                    ` : ''}
+
+                    <!-- Grid de las 3 Series Realizadas -->
+                    ${setsRowsHtml}
+                </div>
+            </div>
+
+            <!-- Botones Interactivos de Tarjeta -->
+            <div class="bg-zinc-950 border-t border-zinc-900 p-3 grid grid-cols-2 gap-2">
+                <button onclick="openLogModal('${info.id}')" class="bg-zinc-900 hover:bg-zinc-800 text-brand-400 border border-zinc-800 hover:border-brand-500/30 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5">
+                    <i data-lucide="plus" class="h-3.5 w-3.5"></i> Registrar
+                </button>
+                <button onclick="openHistoryModal('${info.id}')" class="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5">
+                    <i data-lucide="line-chart" class="h-3.5 w-3.5"></i> Historial
+                </button>
+            </div>
+        `;
+
+        grid.appendChild(card);
+    });
+
+    lucide.createIcons();
+};
+
+const filterExercises = (category) => {
+    playSound('click');
+    currentActiveFilter = category;
+    
+    document.querySelectorAll('.btn-filter').forEach(btn => {
+        btn.className = "btn-filter px-4 py-2 rounded-xl text-xs font-semibold bg-zinc-900 text-zinc-400 border border-zinc-800 hover:bg-zinc-800 hover:text-white transition-all duration-200";
+    });
+
+    const activeBtn = document.getElementById(`btn-filter-${category}`);
+    if (activeBtn) {
+        activeBtn.className = "btn-filter px-4 py-2 rounded-xl text-xs font-semibold bg-brand-500 text-black border border-brand-400/20 shadow-md shadow-brand-500/10 transition-all duration-200";
+    }
+
+    renderExercisesGrid();
+};
+
+// HANDLERS DEL MODAL DE REGISTRO
+const openLogModal = (exerciseId, workoutIndexToEdit = -1) => {
+    playSound('click');
+    const info = EXERCISES_DATABASE[exerciseId];
+    const history = userWorkouts[exerciseId] || [];
+    
+    document.getElementById('input-exercise-id').value = exerciseId;
+    document.getElementById('input-workout-index-to-edit').value = workoutIndexToEdit;
+    document.getElementById('modal-title-exercise-name').innerText = info.name;
+    
+    const dateInput = document.getElementById('workout-date');
+    const today = new Date().toISOString().split('T')[0];
+    
+    let s1W = "", s1R = "", s2W = "", s2R = "", s3W = "", s3R = "";
+
+    if (workoutIndexToEdit !== -1) {
+        // Editando entrenamiento existente
+        const editingWorkout = history[workoutIndexToEdit];
+        dateInput.value = editingWorkout.date;
+        document.getElementById('modal-title-exercise-desc').innerText = "Modificando entrenamiento anterior";
+        
+        s1W = editingWorkout.sets[0].weight; s1R = editingWorkout.sets[0].reps;
+        s2W = editingWorkout.sets[1].weight; s2R = editingWorkout.sets[1].reps;
+        s3W = editingWorkout.sets[2].weight; s3R = editingWorkout.sets[2].reps;
+    } else {
+        // Registrando nuevo entrenamiento
+        dateInput.value = today;
+        document.getElementById('modal-title-exercise-desc').innerText = "Introduce los datos de tu sesión";
+        
+        // Autocompletado inteligente con la última sesión realizada para agilizar el uso en gimnasio
+        if (history.length > 0) {
+            const lastLog = [...history].sort((a,b) => new Date(b.date) - new Date(a.date))[0];
+            s1W = lastLog.sets[0].weight; s1R = lastLog.sets[0].reps;
+            s2W = lastLog.sets[1].weight; s2R = lastLog.sets[1].reps;
+            s3W = lastLog.sets[2].weight; s3R = lastLog.sets[2].reps;
+        }
+    }
+
+    // Volcar valores en los inputs
+    document.getElementById('set-1-weight').value = s1W;
+    document.getElementById('set-1-reps').value = s1R;
+    document.getElementById('set-2-weight').value = s2W;
+    document.getElementById('set-2-reps').value = s2R;
+    document.getElementById('set-3-weight').value = s3W;
+    document.getElementById('set-3-reps').value = s3R;
+
+    const modal = document.getElementById('modal-log-workout');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.querySelector('.transform').classList.remove('scale-95');
+    }, 10);
+};
+
+const closeLogModal = () => {
+    const modal = document.getElementById('modal-log-workout');
+    modal.classList.add('opacity-0');
+    modal.querySelector('.transform').classList.add('scale-95');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+};
+
+const saveWorkout = (event) => {
+    event.preventDefault();
+    
+    const exId = document.getElementById('input-exercise-id').value;
+    const editIndex = parseInt(document.getElementById('input-workout-index-to-edit').value);
+    const dateValue = document.getElementById('workout-date').value;
+
+    const s1W = parseFloat(document.getElementById('set-1-weight').value);
+    const s1R = parseInt(document.getElementById('set-1-reps').value);
+    const s2W = parseFloat(document.getElementById('set-2-weight').value);
+    const s2R = parseInt(document.getElementById('set-2-reps').value);
+    const s3W = parseFloat(document.getElementById('set-3-weight').value);
+    const s3R = parseInt(document.getElementById('set-3-reps').value);
+
+    const workoutEntry = {
+        date: dateValue,
+        sets: [
+            { weight: s1W, reps: s1R },
+            { weight: s2W, reps: s2R },
+            { weight: s3W, reps: s3R }
+        ]
+    };
+
+    if (!userWorkouts[exId]) {
+        userWorkouts[exId] = [];
+    }
+
+    const runSave = () => {
+        if (editIndex !== -1) {
+            userWorkouts[exId][editIndex] = workoutEntry;
+            showToast("Modificado", "Sesión de entrenamiento guardada.");
+        } else {
+            const existingSameDateIndex = userWorkouts[exId].findIndex(x => x.date === dateValue);
+            if (existingSameDateIndex !== -1) {
+                userWorkouts[exId][existingSameDateIndex] = workoutEntry;
+                showToast("Sobrescrito", "Se ha actualizado el entrenamiento para esa fecha.");
+            } else {
+                userWorkouts[exId].push(workoutEntry);
+                // Comprobar si supera el récord personal anterior
+                const currentPr = getPersonalRecord(exId);
+                const maxNewSessionWeight = Math.max(s1W, s2W, s3W);
+                if (maxNewSessionWeight >= currentPr.weight) {
+                    showToast("¡NUEVO RÉCORD PERSONAL!", `¡Has alcanzado ${maxNewSessionWeight} kg! 🏆`, true);
+                } else {
+                    showToast("Registrado", "Series guardadas en el historial.");
+                }
+            }
+        }
+
+        // Ordenar de forma cronológica los registros del ejercicio
+        userWorkouts[exId].sort((a,b) => new Date(a.date) - new Date(b.date));
+
+        persistUserData();
+        closeLogModal();
+        renderExercisesGrid();
+        updateHeaderMetrics();
+        
+        // Recargar historial si el panel de análisis estuviera activo
+        const historyModal = document.getElementById('modal-analytics-history');
+        if (!historyModal.classList.contains('hidden')) {
+            openHistoryModal(exId);
+        }
+    };
+
+    // Si ya existe la fecha y no es modo edición, pedimos confirmación con nuestro modal personalizado
+    const existingSameDateIndex = userWorkouts[exId].findIndex(x => x.date === dateValue);
+    if (editIndex === -1 && existingSameDateIndex !== -1) {
+        showConfirm(
+            "¿Sobrescribir sesión?",
+            `Ya registraste datos el ${dateValue}. ¿Deseas reemplazar el registro anterior con estos nuevos valores?`,
+            runSave
+        );
+    } else {
+        runSave();
+    }
+};
+
+// HANDLERS DEL MODAL DE HISTORIAL Y ANALÍTICA (CHART.JS)
+const openHistoryModal = (exerciseId) => {
+    const info = EXERCISES_DATABASE[exerciseId];
+    const history = userWorkouts[exerciseId] || [];
+    
+    document.getElementById('history-modal-exercise-name').innerText = info.name;
+    document.getElementById('history-modal-exercise-target').innerText = info.target;
+
+    const pr = getPersonalRecord(exerciseId);
+    document.getElementById('metric-pr-weight').innerText = pr.weight > 0 ? `${pr.weight} kg x ${pr.reps}` : "---";
+
+    let highest1RM = 0;
+    let absoluteTotalVolume = 0;
+    
+    history.forEach(session => {
+        session.sets.forEach(set => {
+            const oneRM = calculateEstimated1RM(parseFloat(set.weight), parseInt(set.reps));
+            if (oneRM > highest1RM) highest1RM = oneRM;
+            
+            absoluteTotalVolume += (parseFloat(set.weight) * parseInt(set.reps));
+        });
+    });
+
+    document.getElementById('metric-1rm').innerText = highest1RM > 0 ? `${Math.round(highest1RM)} kg` : "---";
+    document.getElementById('metric-total-vol').innerText = `${absoluteTotalVolume.toLocaleString('es-ES')} kg`;
+
+    const container = document.getElementById('history-logs-container');
+    container.innerHTML = "";
+    document.getElementById('history-total-logs-count').innerText = `${history.length} sesiones`;
+
+    if (history.length === 0) {
+        container.innerHTML = `<p class="text-xs text-zinc-500 italic p-6 text-center">No hay registros de entrenamiento para este ejercicio todavía.</p>`;
+    } else {
+        const sortedDesc = [...history].sort((a,b) => new Date(b.date) - new Date(a.date));
+        sortedDesc.forEach((session) => {
+            const origIndex = history.findIndex(x => x.date === session.date);
+            const dateStr = new Date(session.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+            
+            const row = document.createElement('div');
+            row.className = "p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-zinc-900/40 transition-colors";
+            
+            row.innerHTML = `
+                <div>
+                    <span class="text-xs text-zinc-500 block mb-1 font-semibold">${dateStr}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] font-mono font-bold bg-zinc-900 px-2 py-1 rounded text-zinc-300">S1: ${session.sets[0].weight}kg × ${session.sets[0].reps}</span>
+                        <span class="text-[11px] font-mono font-bold bg-zinc-900 px-2 py-1 rounded text-zinc-300">S2: ${session.sets[1].weight}kg × ${session.sets[1].reps}</span>
+                        <span class="text-[11px] font-mono font-bold bg-zinc-900 px-2 py-1 rounded text-zinc-300">S3: ${session.sets[2].weight}kg × ${session.sets[2].reps}</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 self-end sm:self-auto">
+                    <button onclick="editWorkoutFromHistory('${exerciseId}', ${origIndex})" class="p-2 bg-zinc-900 hover:bg-brand-500/10 text-zinc-400 hover:text-brand-400 border border-zinc-800 rounded-lg transition-colors duration-200" title="Editar entrada">
+                        <i data-lucide="edit-2" class="h-4 w-4"></i>
+                    </button>
+                    <button onclick="deleteWorkout('${exerciseId}', ${origIndex})" class="p-2 bg-zinc-900 hover:bg-rose-500/10 text-zinc-400 hover:text-rose-400 border border-zinc-800 rounded-lg transition-colors duration-200" title="Eliminar entrada">
+                        <i data-lucide="trash-2" class="h-4 w-4"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+    }
+
+    // Dibujar gráfico evolutivo
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+
+    const canvasCtx = document.getElementById('progress-chart').getContext('2d');
+    const chronologicalHistory = [...history].sort((a,b) => new Date(a.date) - new Date(b.date));
+    
+    const labels = chronologicalHistory.map(h => {
+        const d = new Date(h.date);
+        return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+    });
+
+    const maxWeightTrend = chronologicalHistory.map(h => {
+        return Math.max(...h.sets.map(s => parseFloat(s.weight)));
+    });
+
+    const calculated1RMTrend = chronologicalHistory.map(h => {
+        const session1RMs = h.sets.map(s => calculateEstimated1RM(parseFloat(s.weight), parseInt(s.reps)));
+        return Math.max(...session1RMs);
+    });
+
+    chartInstance = new Chart(canvasCtx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Peso Máximo (kg)',
+                    data: maxWeightTrend,
+                    borderColor: '#22d3ee',
+                    backgroundColor: 'rgba(34, 211, 238, 0.05)',
+                    borderWidth: 2,
+                    tension: 0.35,
+                    fill: true,
+                    pointBackgroundColor: '#22d3ee'
+                },
+                {
+                    label: '1RM Estimado (O\'Conner)',
+                    data: calculated1RMTrend,
+                    borderColor: '#a78bfa',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    tension: 0.35,
+                    pointBackgroundColor: '#a78bfa'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: '#a1a1aa',
+                        font: { size: 10, family: 'Inter' }
+                    }
+                },
+                tooltip: {
+                    padding: 10,
+                    backgroundColor: '#18181b',
+                    titleColor: '#fff',
+                    bodyColor: '#e4e4e7',
+                    borderWidth: 1,
+                    borderColor: '#27272a'
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: '#18181b' },
+                    ticks: { color: '#71717a', font: { size: 10 } }
+                },
+                y: {
+                    grid: { color: '#18181b' },
+                    ticks: { color: '#71717a', font: { size: 10 } }
+                }
+            }
+        }
+    });
+
+    const modal = document.getElementById('modal-analytics-history');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.querySelector('.transform').classList.remove('scale-95');
+    }, 10);
+
+    lucide.createIcons();
+};
+
+const closeHistoryModal = () => {
+    const modal = document.getElementById('modal-analytics-history');
+    modal.classList.add('opacity-0');
+    modal.querySelector('.transform').classList.add('scale-95');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+};
+
+const editWorkoutFromHistory = (exerciseId, index) => {
+    openLogModal(exerciseId, index);
+};
+
+const deleteWorkout = (exerciseId, index) => {
+    showConfirm(
+        "¿Eliminar registro?",
+        "¿Seguro que quieres borrar este registro de entrenamiento del historial?",
+        () => {
+            playSound('delete');
+            userWorkouts[exerciseId].splice(index, 1);
+            persistUserData();
+            renderExercisesGrid();
+            updateHeaderMetrics();
+            
+            const history = userWorkouts[exerciseId] || [];
+            if (history.length === 0) {
+                closeHistoryModal();
+            } else {
+                openHistoryModal(exerciseId);
+            }
+            showToast("Eliminado", "La sesión fue eliminada del historial.", false);
+        }
+    );
+};
+
+// ACCIÓN DE FINALIZAR ENTRENAMIENTO DE ATLETA
+const finishWorkoutSession = () => {
+    if (!currentUser) return;
+    
+    // 1. Asegurar persistencia limpia en LocalStorage
+    persistUserData();
+    playSound('fanfare');
+
+    // 2. Localizar ejercicios completados el día de hoy
+    const todayStr = new Date().toISOString().split('T')[0];
+    let completedToday = [];
+    
+    Object.keys(EXERCISES_DATABASE).forEach(exId => {
+        const history = userWorkouts[exId] || [];
+        const didToday = history.some(h => h.date === todayStr);
+        if (didToday) {
+            completedToday.push(EXERCISES_DATABASE[exId].name);
+        }
+    });
+
+    // 3. Renderizar resumen en el modal de celebración
+    const summaryContainer = document.getElementById('celebration-summary-list');
+    summaryContainer.innerHTML = "";
+    
+    if (completedToday.length === 0) {
+        summaryContainer.innerHTML = `
+            <p class="text-xs text-zinc-500 italic text-center py-1">
+                No has registrado series con la fecha de hoy, ¡pero tu progreso general se ha guardado perfectamente!
+            </p>
+        `;
+    } else {
+        completedToday.forEach(name => {
+            const row = document.createElement('div');
+            row.className = "flex items-center gap-2 text-xs text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 rounded-xl";
+            row.innerHTML = `<i data-lucide="check" class="h-3.5 w-3.5 flex-shrink-0"></i> <span>${name}</span>`;
+            summaryContainer.appendChild(row);
+        });
+    }
+
+    // 4. Mostrar el diálogo de guardado del sistema de archivos
+    const modal = document.getElementById('modal-celebration');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.querySelector('.transform').classList.remove('scale-95');
+    }, 10);
+
+    lucide.createIcons();
+};
+
+const closeCelebrationModal = () => {
+    const modal = document.getElementById('modal-celebration');
+    modal.classList.add('opacity-0');
+    modal.querySelector('.transform').classList.add('scale-95');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+};
+
+// Startup de la ventana principal
+window.onload = () => {
+    lucide.createIcons();
+};
+</script>
+</body>
+</html>
+```
+eof
+
+### Resumen de cambios aplicados:
+* **Persistencia Local Automática:** Se elimina por completo el diálogo de archivos y la dependencia de ficheros `.json` externos. Todo se guarda automáticamente en `LocalStorage` en tiempo real.
+* **Flujo de "Finalizar Entrenamiento" sin Fricciones:** Al pulsar el botón verde, el sistema consolida los cambios, emite un efecto de sonido de victoria y abre una pantalla que destaca y enumera los ejercicios entrenados en el día de hoy con sus respectivas marcas.
+* **Modal de Confirmación Integrado:** Se ha reemplazado la llamada de sistema `confirm()` por un modal personalizado oscuro y elegante para mantener la estética premium de la aplicación.
